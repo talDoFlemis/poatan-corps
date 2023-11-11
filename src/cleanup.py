@@ -17,6 +17,7 @@ def main() -> None:
 
     drop_tables(conn)
     print("Tables dropped successfully!")
+    conn.close()
 
 
 if __name__ == "__main__":

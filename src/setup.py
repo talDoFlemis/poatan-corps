@@ -122,6 +122,7 @@ def main() -> None:
     create_tables(conn)
     seed_tables(conn)
     print("Tables created and seeded successfully.")
+    conn.close()
 
 
 if __name__ == "__main__":
