@@ -8,7 +8,7 @@ def create_connection():
     load_dotenv()
 
     DBNAME = os.getenv("DBNAME")
-    USER = os.getenv("USER")
+    USER = os.getenv("PGUSER")
     PASSWORD = os.getenv("PASSWORD")
     HOST = os.getenv("HOST")
     PORT = os.getenv("PORT")
