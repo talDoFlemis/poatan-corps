@@ -26,8 +26,11 @@ trigger:
 	@echo "Running trigger..."
 	poetry run python -m src.trigger
 
+all: cleanup setup consults transaction stored_procedure trigger
+	@echo "Done!"
+
 cleanup:
 	@echo "Cleaning up..."
 	poetry run python -m src.cleanup
 
-.PHONY: env install setup cleanup transaction stored_procedure trigger
+.PHONY: env install setup cleanup transaction stored_procedure trigger all
