@@ -29,6 +29,10 @@ trigger:
 all: cleanup setup consults transaction stored_procedure trigger
 	@echo "Done!"
 
+zip:
+	@echo "Zipping project..."
+	zip -r fbd_trabalho_II_said_andre.zip . -x ".*" -x "__pycache__/*" -x "venv/*" -x "src/__pycache__/*"
+
 cleanup:
 	@echo "Cleaning up..."
 	poetry run python -m src.cleanup
