@@ -1,4 +1,4 @@
-from helper import create_connection
+from src.helper import create_connection
 
 
 def create_tables(conn) -> None:
@@ -17,7 +17,7 @@ def create_tables(conn) -> None:
         id_trp SERIAL PRIMARY KEY,
         nome VARCHAR(50) NOT NULL,
         funcao VARCHAR(50) NOT NULL,
-        data_nasc DATETIME NOT NULL,
+        data_nasc TIMESTAMPTZ NOT NULL,
         id_emb INTEGER NOT NULL REFERENCES emb(id_emb)
     );
     """
@@ -27,7 +27,7 @@ def create_tables(conn) -> None:
     CREATE TABLE IF NOT EXISTS emp (
         id_emp SERIAL PRIMARY KEY,
         nome VARCHAR(50) NOT NULL,
-        data_nasc DATETIME NOT NULL,
+        data_nasc TIMESTAMPTZ NOT NULL,
         funcao VARCHAR(50) NOT NULL
     );
     """
@@ -36,7 +36,7 @@ def create_tables(conn) -> None:
     mov_query = """
     CREATE TABLE IF NOT EXISTS mov (
         id_mov SERIAL PRIMARY KEY,
-        data DATETIME NOT NULL,
+        data TIMESTAMPTZ NOT NULL,
         tipo VARCHAR(50) NOT NULL,
         id_emb INTEGER NOT NULL REFERENCES emb(id_emb)
     );
@@ -45,13 +45,15 @@ def create_tables(conn) -> None:
 
     mov_emp_query = """
     CREATE TABLE IF NOT EXISTS mov_emp (
-        id_mov INTEGER PRIMARY KEY REFERENCES mov(id_mov),
-        id_emb INTEGER NOT NULL REFERENCES emb(id_emb)
+        id_mov INTEGER  REFERENCES mov(id_mov),
+        id_emp INTEGER NOT NULL REFERENCES emp(id_emp),
+        PRIMARY KEY (id_mov, id_emp)
     );
     """
     cursor.execute(mov_emp_query)
 
-    cursor.commit()
+    conn.commit()
+    cursor.close()
 
 
 def seed_tables(conn) -> None:
@@ -110,7 +112,8 @@ def seed_tables(conn) -> None:
     """
     cursor.execute(mov_emp_insert)
 
-    cursor.commit()
+    conn.commit()
+    cursor.close()
 
 
 def main() -> None:
@@ -118,6 +121,7 @@ def main() -> None:
 
     create_tables(conn)
     seed_tables(conn)
+    print("Tables created and seeded successfully.")
 
 
 if __name__ == "__main__":
