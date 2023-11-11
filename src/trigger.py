@@ -1,11 +1,5 @@
 from src.helper import create_connection
 
-# 1. Implemente um gatilho no banco de dados que dispara toda vez que um Tripulante  ́e cadastrado ou quando
-# o atributo “funcao” tem seu valor modificado. O gatilho deve garantir que somente um dos tripulantes
-# tenha a fun ̧c ̃ao “Capit ̃ao”.
-# 2. Crie um segundo gatilho que restrinja que somente empregados da manuten ̧c ̃ao possam ser escolhidos para
-# executar movimenta ̧c ̃oes do tipo “Manuten ̧c ̃ao”.
-
 
 def create_trigger_tripulante_capitao(conn):
     print("\nRunning Tripulante Capitao Trigger")
@@ -15,13 +9,13 @@ def create_trigger_tripulante_capitao(conn):
     CREATE OR REPLACE FUNCTION tripulante_capitao()
     RETURNS TRIGGER
     LANGUAGE plpgsql
-    AS 
+    AS
     $$
     BEGIN
         IF NEW.funcao = 'Capitão' THEN
-            UPDATE trip SET funcao = 'Oficial de Convés' WHERE funcao = 'Capitão';
-            RETURN NEW;
+            UPDATE trip SET funcao = 'Oficial de Convés' WHERE funcao = 'Capitão' AND id_emb = NEW.id_emb;
         END IF;
+        RETURN NEW;
     END;
     $$;
     """
@@ -49,11 +43,13 @@ def create_trigger_empregado_manutencao(conn):
     LANGUAGE plpgsql
     AS
     $$
+    DECLARE mov_manu bool;
+    DECLARE emp_manu bool;
     BEGIN
-        IF SELECT tipo FROM mov WHERE id_mov = NEW.id_mov AND tipo = 'Manutenção' THEN
-            IF SELECT funcao FROM emp where id_emp = NEW.id_emp AND NOT funcao = 'Manutenção' THEN
-                RETURN;
-            END IF;
+        mov_manu = EXISTS(SELECT * FROM mov WHERE tipo = 'Manutenção' AND id_mov = NEW.id_mov);
+        emp_manu = EXISTS(SELECT * FROM emp WHERE id_emp = NEW.id_emp AND funcao = 'Manutenção');
+        IF mov_manu = TRUE AND emp_manu = FALSE THEN
+            RETURN NULL;
         END IF;
         RETURN NEW;
     END;
@@ -63,12 +59,11 @@ def create_trigger_empregado_manutencao(conn):
     cursor.execute(create_function)
     create_trigger = """
     CREATE OR REPLACE TRIGGER empregado_manutencao
-    BEFORE INSERT OR UPDATE OF funcao ON mov_emp
+    BEFORE INSERT ON mov_emp
     FOR EACH ROW
     EXECUTE PROCEDURE empregado_manutencao();
     """
     cursor.execute(create_trigger)
-
 
     cursor.close()
     conn.commit()
@@ -88,9 +83,27 @@ def insert_mov_emp(conn):
     cursor.close()
 
 
+def insert_other_caps(conn):
+    print("\nRunning Insert Other Caps")
+    cursor = conn.cursor()
+    insert_others_caps = """
+    INSERT INTO trip(id_trp, nome, data_nasc, funcao, id_emb) VALUES
+    (7, 'Tripulante7', '1980-09-04', 'Capitão', 4),
+    (8, 'Tripulante8', '1985-03-03', 'Capitão', 2);
+    """
+    cursor.execute(insert_others_caps)
+
+    cursor.close()
+    conn.commit()
+
+
 def insert_capitao(conn):
     print("\nRunning Insert Capitao")
     cursor = conn.cursor()
+    insert_others_caps = """
+    UPDATE trip SET funcao = 'Capitão' WHERE nome = 'Tripulante3';
+    """
+    cursor.execute(insert_others_caps)
 
     cursor.close()
     conn.commit()
@@ -102,11 +115,12 @@ def main():
     create_trigger_tripulante_capitao(conn)
     create_trigger_empregado_manutencao(conn)
     insert_mov_emp(conn)
-    # insert_capitao(conn)
+    insert_other_caps(conn)
+    insert_capitao(conn)
 
     conn.commit()
 
-    print("Done Trigger")
+    print("\nDone Trigger")
     conn.close()
 
 
