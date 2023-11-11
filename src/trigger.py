@@ -22,7 +22,7 @@ def create_trigger_tripulante_capitao(conn):
     cursor.execute(create_function)
 
     create_trigger = """
-    CREATE OR REPLACE TRIGGER tripulante_capitao
+    CREATE TRIGGER tripulante_capitao
     BEFORE INSERT OR UPDATE OF funcao ON trip
     FOR EACH ROW
     EXECUTE PROCEDURE tripulante_capitao();
@@ -58,7 +58,7 @@ def create_trigger_empregado_manutencao(conn):
 
     cursor.execute(create_function)
     create_trigger = """
-    CREATE OR REPLACE TRIGGER empregado_manutencao
+    CREATE TRIGGER empregado_manutencao
     BEFORE INSERT ON mov_emp
     FOR EACH ROW
     EXECUTE PROCEDURE empregado_manutencao();
